@@ -1,3 +1,7 @@
-.aa{
+.background{
     background-color: red;
+    height: 100vh;
+    width: 100vh;
+    background: url('@/../assets/img/07.svg') center center no-repeat;
+    // background: #ffffff url(../assets/logo.png) no-repeat;
 }
