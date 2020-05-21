@@ -12,12 +12,12 @@ return rs;
 // 验证邮箱
 export function validateEmail(str){
     let isEmail = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
-    return isEmail.test(str) ? false : true
-    // return isEmail.test(str) 
+    return isEmail.test(str) 
 }
 // 验证密码
 export function validatePass(str){
     let isPass = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^]{6,18}$/;
-    return isPass.test(str) ? false : true
-    // return isEmail.test(str) 
+    console.log('----------houtai')
+    console.log(isPass.test(str))
+    return isPass.test(str) 
 }

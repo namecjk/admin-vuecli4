@@ -16,9 +16,9 @@
                 v-for="(item,i) in menuTab"
                 :key="i"
                 :class="{'currentLi':item.current}"
-                @click="change(item)"
+                @click="changes(item)"
               >{{item.txt}}</li>
-            </ul> -->
+            </ul>-->
 
             <!-- form表单验证 -->
             <div class="formLogin">
@@ -31,7 +31,7 @@
                 label-width="100px"
                 class="demo-ruleForm"
               >
-              <!-- Email -->
+                <!-- Email -->
                 <el-form-item prop="userName">
                   <label for>Email</label>
                   <el-input type="text" v-model="ruleForm.userName" autocomplete="off"></el-input>
@@ -48,7 +48,7 @@
                   ></el-input>
                 </el-form-item>
                 <!-- 注册显示2次密码 -->
-                 <el-form-item  v-if="statusLogin === 'register'" prop="checkPass">
+                <el-form-item v-if="statusLogin === 'register'" prop="checkPass">
                   <label for>再次输入密码</label>
                   <el-input
                     maxlength="20"
@@ -64,7 +64,7 @@
                   <el-row :gutter="5">
                     <el-col :span="14">
                       <el-input
-                        maxlength="6"
+                        maxlength="10"
                         minlength="6"
                         type="text"
                         v-model="ruleForm.code"
@@ -72,18 +72,30 @@
                       ></el-input>
                     </el-col>
                     <el-col :span="10">
-                      <el-button type="success" class="block">获取验码</el-button>
+                      <el-button style="font-size: 12px;margin-top:2px;" type="success" class="block" @click="getSmsForAxios(5)" :disabled='disabled'>{{reqCode}}</el-button>
                     </el-col>
                   </el-row>
                 </el-form-item>
                 <!-- 注册登陆切换 -->
                 <el-form-item>
-                  <el-button type="primary" @click="submitForm('ruleForm')" class="block">登录</el-button>
+                  <el-button type="primary" @click="submitForm('ruleForm')" class="block">{{statusLogin === 'login' ? '登录' : '注册'}}</el-button>
                 </el-form-item>
-                  <!--注册登陆切换 -->
+                <!--注册登陆切换 -->
                 <div class="switchLogin-wrap">
-                  <el-link @click="switchLG" v-show="statusLogin === 'login'" :underline="false" type="primary" class="switchLogin">{{loginAndRegister.login}}</el-link>
-                  <el-link @click="switchLG" v-show="statusLogin === 'register'" :underline="false" type="primary" class="switchLogin">{{loginAndRegister.register}}</el-link>
+                  <el-link
+                    @click="switchLG"
+                    v-show="statusLogin === 'login'"
+                    :underline="false"
+                    type="primary"
+                    class="switchLogin"
+                  >{{loginAndRegister.login}}</el-link>
+                  <el-link
+                    @click="switchLG"
+                    v-show="statusLogin === 'register'"
+                    :underline="false"
+                    type="primary"
+                    class="switchLogin"
+                  >{{loginAndRegister.register}}</el-link>
                 </div>
               </el-form>
             </div>
@@ -95,120 +107,269 @@
 </template>
 
 <script>
+// sha1加密
+import sha1 from 'sha1';
 // element-ui条件隐藏css
 import "element-ui/lib/theme-chalk/display.css";
 // 引入过滤特殊字符函数
 import { stripscript, validateEmail, validatePass } from "@/utils/validate";
+// 引入vue3.0
+import { reactive, ref, onMounted, isRef, toRefs } from "@vue/composition-api";
+// 引入axios请求API方法和模块  === 模块化引入
+import { getPassCode,getLogin,getRegister } from '../../api/login';
 export default {
   name: "Login",
-  data() {
+
+  // vue3.0 所有代码都写在 setup中
+  // setup(props,context) {
+    // console.log(context)
+      /*
+        attrs: === this.attrs
+        emit: === this.emit
+        isServer: === this.isServer
+        listeners: === this.listeners
+        parent: === this.parent
+        refs: === this.refs
+        root: === this.
+     */ 
+  setup(props,{refs,root}) { //结构写法
+    //data 声明周期 自定义函数 都写在这里面
+
+    // 自定义-数据
+    const screenShow = ref(true); //拿到true 必须.value
+    const disabled = ref(false);
+    const statusLogin = ref("login");
+    const switchLogin = ref(true);
+    const reqCode = ref('获取验证码');
+    const menuTabs = reactive([
+      { txt: "登录", current: true },
+      { txt: "注册", current: true }
+    ]);
+    const loginAndRegister = reactive({
+      login: "没有账号?去注册",
+      register: "以有账号?去登陆"
+    });
+
+    // 表单验证
     // 邮箱
-    var validateUserName = (rule, value, callback) => {
+    let validateUserName = (rule, value, callback) => {
       if (value === "") {
-        callback(new Error("请输入邮箱"));
-      } else if (validateEmail(value)) {
-        callback(new Error("请输入正确邮箱"));
+        callback(new Error("请输入邮箱1"));
+      } else if (!validateEmail(value)) {
+        callback(new Error("请输入正确邮箱1"));
       } else {
         callback();
       }
     };
     // 密码
-    var validatepassWord = (rule, value, callback) => {
-      // 过滤特殊字符
-      this.ruleForm.passWord = stripscript(value);
+    let validatepassWord = (rule, value, callback) => {
+      //过滤特殊字符
+      ruleForm.passWord = stripscript(value);
       value = stripscript(value);
 
       if (value === "") {
         callback(new Error("请输入密码"));
-      } else if (validatePass(value)) {
-        callback(new Error("密码6-20数组+字母"));
+      } else if (!validatePass(value)) {
+        callback(new Error("密码6-20数组+字母+大字母"));
       } else {
+        // 密码加密
+        value = sha1(value)
         callback();
       }
     };
     // 注册-再次输入密码-checkpass
-    var validatecheckPass = (rule, value, callback) => {
-      // 过滤特殊字符
-      this.ruleForm.checkPass = stripscript(value);
+    let validatecheckPass = (rule, value, callback) => {
+      //过滤特殊字符
+      ruleForm.checkPass = stripscript(value);
       value = stripscript(value);
       if (value === "") {
         callback(new Error("请再次输入密码"));
-      } else if (value != this.ruleForm.passWord) {
+      } else if (value != ruleForm.passWord) {
         callback(new Error("两次密码不一致"));
       } else {
+        // 密码加密
+        value = sha1(value)
         callback();
       }
     };
     // 验证码
-    var validateCode = (rule, value, callback) => {
+    let validateCode = (rule, value, callback) => {
       // 过滤特殊字符
-      this.ruleForm.code = stripscript(value);
+      ruleForm.code = stripscript(value);
       value = stripscript(value);
-      if (value === "") {
-        return callback(new Error("验证码不能为空"));
+
+      if (value === "" || value.length < 6) {
+        return callback(new Error("验证码不能为空,最少6位"));
       } else {
         callback();
       }
     };
-    // data return
-    return {
-      screenShow: true,
-      statusLogin : 'login',
-      switchLogin: true,
-      menuTab: [
-        { txt: "登录", current: true },
-        { txt: "注册", current: true }
-      ], 
-      loginAndRegister : {
-          "login":"没有账号?去注册",
-          "register":"以有账号?去登陆"
-      },
-      ruleForm: {
-        userName: "",
-        passWord: "",
-        code: "",
-        checkPass:""
-      },
-      rules: {
-        userName: [{ validator: validateUserName, trigger: "blur" }],
-        passWord: [{ validator: validatepassWord, trigger: "blur" }],
-        code: [{ validator: validateCode, trigger: "blur" }],
-        checkPass: [{ validator: validatecheckPass, trigger: "blur" }]
-      }
+
+    // 表单验证数据
+    const ruleForm = reactive({
+      userName: "312316773@qq.com",
+      passWord: "QWEqwe123",
+      code: "",
+      checkPass: ""
+    });
+    const rules = reactive({
+      userName: [{ validator: validateUserName, trigger: "blur" }],
+      passWord: [{ validator: validatepassWord, trigger: "blur" }],
+      code: [{ validator: validateCode, trigger: "blur" }],
+      checkPass: [{ validator: validatecheckPass, trigger: "blur" }]
+    });
+
+    console.log(screenShow.value);
+    console.log(isRef(menuTabs));
+    console.log(toRefs(menuTabs));
+    console.log(menuTabs);
+
+    // 生命周期
+    onMounted(() => {
+      // 环境变量值  
+      console.log(process.env.NODE_ENV)
+      console.log(process.env.VUE_APP_ABC)
+      console.log(process.env.VUE_APP_MODE)
+
+      // 测试
+      // let num = 'QWE123namecjk123456';
+      // console.log(num);
+      // console.log(sha1(num));
+
+   
+    });
+
+    // 自定义方法 获取验证码
+    const getSmsForAxios = (num) =>{
+        console.log(statusLogin.value)
+        // 前端-判断-邮箱不能为空
+        if (ruleForm.userName == '' || !validateEmail(ruleForm.userName)) return root.$message.error('邮箱格式错误,不能为空！！');
+        // 修改按钮value和是否可点
+        reqCode.value = '发送中';
+        disabled.value = true;
+
+        // 倒计时方法
+        timeBack(num);
+
+        // 判断登录还是注册，并执行请求api
+        getPassCode(ruleForm.userName,ruleForm.passWord,statusLogin.value);
+
+        // // 请求api
+        // getSms(ruleForm.userName);
+        
+        
     };
-  },
-  created() {},
-  // 挂载完成后自动执行
-  mounted() {},
-  methods: {
-    change(data) {
+    // 到计时方法
+    const timeBack = (num) => {
+
+      setTimeout(() => {
+            // 提示
+            root.$message({
+            message: '验证码已发送,请注意查收',
+            type: 'success'
+            });
+
+            // 请求验证码
+            // getSms(ruleForm.userName)
+
+            // 倒计时
+              let time = setInterval(() => {
+                reqCode.value = `${num}后,再试`;
+                num--;
+                if(num < 0){
+                  clearInterval(time);
+                  disabled.value = false;
+                  reqCode.value = '再次获取';
+                }
+              }, 1000);//setInterval
+        }, 1000);//setTimeout 
+
+    };
+
+    const changes = data => {
       console.log(data);
       data.current = true;
-    },
+    };
     //表单验证
-    submitForm(formName) {
-      this.$refs[formName].validate(valid => {
+    const submitForm = formName => {
+      console.log(statusLogin.value)
+      // alert(11);
+      // axios({
+      //   url:'user/123',
+      //   method:'post',
+      //   data:{
+      //     "asd":"asd",
+      //     "qwe":"asd"
+      //   }
+
+      // }).then(res=>{
+      //   console.log(res)
+      // }).catch(err=>{
+      //   console.log(err)
+      // })
+
+      refs[formName].validate(valid => {
         if (valid) {
-          alert("submit!");
+          // console.log(123123)
+          // console.log(refs)
+              // 判断是登录还是注册方法
+            loginOrRegister();
+
         } else {
           console.log("error submit!!");
           return false;
         }
       });
-    },
-    resetForm(formName) {
-      this.$refs[formName].resetFields();
-    },
-    // 切换登陆
-    switchLG(){
-        //清空输入框
-        for(let key in this.ruleForm){
-            this.ruleForm[key] = ''
-        }
-        this.switchLogin = !this.switchLogin
-        this.switchLogin == true ? this.statusLogin = 'login' : this.statusLogin = 'register'
+    };
+    
+     // 判断登录或者注册方法,并执行请求api--分离
+      const loginOrRegister = () => {
+          if (statusLogin.value == 'login') {
+                    getLogin(ruleForm.userName,ruleForm.passWord,ruleForm.code);
+              }else if (statusLogin.value == 'register') {
+                    getRegister(ruleForm.userName,ruleForm.passWord,ruleForm.code);
+              }else{
+                    root.$message.error('失败，请联系管理员');               
+              };
+      };
 
-    }
+      // 
+    const resetForm = formName => {
+      refs[formName].resetFields();
+    };
+    // 切换登陆
+    const switchLG = () => {
+      //清空输入框
+      for (let key in ruleForm) {
+        ruleForm[key] = "";
+      }
+      // 恢复获取验证码
+      reqCode.value = '获取验证码';
+      switchLogin.value = !switchLogin.value ;
+      switchLogin.value  == true
+        ? (statusLogin.value  = "login")
+        : (statusLogin.value  = "register");
+    };
+    
+    return {
+      disabled,
+      screenShow,
+      statusLogin,
+      switchLogin,
+      reqCode,
+      menuTabs,
+      loginAndRegister,
+      rules,
+      ruleForm,
+      //   方法
+      changes,
+      submitForm,
+      resetForm,
+      switchLG,
+      getSmsForAxios,
+      timeBack,
+      loginOrRegister
+    };
   }
 };
 </script>
@@ -285,13 +446,13 @@ export default {
         }
         // 切换登陆
         .switchLogin-wrap {
-        width: 100%;
-        // border: 1px solid #a9a9a9;
+          width: 100%;
+          // border: 1px solid #a9a9a9;
 
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-          .switchLogin{
+          display: flex;
+          flex-direction: row;
+          justify-content: center;
+          .switchLogin {
             width: 248px;
             padding-left: 100px;
           }
