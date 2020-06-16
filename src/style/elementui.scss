@@ -1,0 +1,49 @@
+// 新增弹窗css
+.el-textarea__inner{
+ height: 100px !important;
+}
+.el-dialog__footer{
+    text-align: center !important;
+}
+// 新增弹窗css
+
+.el-col-12{
+    width: 100%;
+}
+.el-menu{
+    border: none;
+}
+// 被点击背景色
+// 主类
+.el-submenu.is-active .el-submenu__title {
+    background-color: $mainColor !important;
+}
+// 子类
+.el-menu-item {
+    padding-left: 49px !important;
+    color: #303133 !important;
+    &.is-active{
+        color: rgb(27, 24, 13) !important;
+    background-color: rgba(245, 108, 108,0.2) !important;
+    }
+}
+// nav.vue span对齐图片
+.el-submenu__title *{   
+    display: inline-block;
+}
+// nav close状态
+.el-menu--popup{
+     background-color: rgb(240, 240, 240) !important;
+     padding: 0 !important;
+}
+.el-menu--popup-right-start {
+    margin-left: 19px !important;
+}
+
+.el-menu-item-group__title{
+    padding: 0 !important;
+}
+.el-menu-item:hover{
+    background-color: rgb(204, 204, 204)!important;
+
+}

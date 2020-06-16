@@ -1,0 +1,36 @@
+// 配置变量
+$fullCount:100%;
+// 主颜色
+$mainColor:rgb(245, 108, 108);
+// nav组件 开始
+// width
+$NavWidth:260px;
+// css3封装
+@mixin webkit($type,$value) {
+    -webkit-#{$type}: $value;
+    -moz-#{$type}: $value;
+    -o-#{$type}: $value;
+    -ms-#{$type}: $value;
+    $type : $value;
+}
+// nav组件 结束
+
+// infolist组件 开始
+// wrapper
+@mixin infoListWrapper(){
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+// width
+$infolistWidth:100px;
+// 字体排序和右边距
+@mixin infoListWords(){
+    margin-right: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+// 占位高度
+$spaceHeight:31px;
+// infolist组件 结束

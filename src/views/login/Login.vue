@@ -11,15 +11,6 @@
       <el-col :span="8">
         <div class="login-wrapper">
           <div class="form-wrap">
-            <!-- <ul class="menu-tab">
-              <li
-                v-for="(item,i) in menuTab"
-                :key="i"
-                :class="{'currentLi':item.current}"
-                @click="changes(item)"
-              >{{item.txt}}</li>
-            </ul>-->
-
             <!-- form表单验证 -->
             <div class="formLogin">
               <!-- form表单验证 -->
@@ -107,6 +98,8 @@
 </template>
 
 <script>
+// 存cookies
+import cookies from 'cookiesjs'
 // sha1加密
 import sha1 from 'sha1';
 // element-ui条件隐藏css
@@ -116,7 +109,7 @@ import { stripscript, validateEmail, validatePass } from "@/utils/validate";
 // 引入vue3.0
 import { reactive, ref, onMounted, isRef, toRefs } from "@vue/composition-api";
 // 引入axios请求API方法和模块  === 模块化引入
-import { getPassCode,getLogin,getRegister } from '../../api/login';
+import { getPassCode,getRegister } from '../../api/login';
 export default {
   name: "Login",
 
@@ -219,17 +212,18 @@ export default {
       checkPass: [{ validator: validatecheckPass, trigger: "blur" }]
     });
 
-    console.log(screenShow.value);
-    console.log(isRef(menuTabs));
-    console.log(toRefs(menuTabs));
-    console.log(menuTabs);
+    console.log(screenShow.value); //vue3 ref类型
+    console.log(isRef(menuTabs)); //vue3  判断是不是ref类型
+    console.log(toRefs(menuTabs));//vue3  
+    console.log('以上是vue3 测试-----------------')
 
     // 生命周期
     onMounted(() => {
-      // 环境变量值  
+      // 环境变量值    在什么环境下 执行什么函数
       console.log(process.env.NODE_ENV)
       console.log(process.env.VUE_APP_ABC)
       console.log(process.env.VUE_APP_MODE)
+      console.log('以上是vue3---环境变量---------测试-----------------')
 
       // 测试
       // let num = 'QWE123namecjk123456';
@@ -241,7 +235,6 @@ export default {
 
     // 自定义方法 获取验证码
     const getSmsForAxios = (num) =>{
-        console.log(statusLogin.value)
         // 前端-判断-邮箱不能为空
         if (ruleForm.userName == '' || !validateEmail(ruleForm.userName)) return root.$message.error('邮箱格式错误,不能为空！！');
         // 修改按钮value和是否可点
@@ -285,14 +278,8 @@ export default {
         }, 1000);//setTimeout 
 
     };
-
-    const changes = data => {
-      console.log(data);
-      data.current = true;
-    };
     //表单验证
     const submitForm = formName => {
-      console.log(statusLogin.value)
       // alert(11);
       // axios({
       //   url:'user/123',
@@ -325,9 +312,45 @@ export default {
      // 判断登录或者注册方法,并执行请求api--分离
       const loginOrRegister = () => {
           if (statusLogin.value == 'login') {
-                    getLogin(ruleForm.userName,ruleForm.passWord,ruleForm.code);
+                    //(ruleForm.userName,sha1(ruleForm.passWord),ruleForm.code,function(res) {
+                          // console.log('登录成功--------前端')
+                          // console.log(res)
+                          //   if (res.data.data.length !== 0) {
+                          //       // 跳转路由
+                          //       root.$router.push({name:'Console'})
+
+                          //   }else{
+                          //         console.log('登录失败--------前端')
+                          //   }
+                    // });
+                  // 将login方法 放进了 vuex actions 中调用
+                    let data = reactive({
+                      userName:ruleForm.userName,
+                      passWord:sha1(ruleForm.passWord),
+                      code:ruleForm.code
+                    })
+                    // 把登录模块 放进 vuex actions 异步中 
+                    root.$store.dispatch('app/login',data)
+                      .then((res)=>{  
+                          console.log('登录成功--------前端')
+                          console.log(res)
+                            if (res.data.length !== 0) {
+                                // 存入cookies
+                                let myToken = res.data.token;
+                                cookies({userName:res.data.email,token:myToken});
+                                console.log(typeof myToken);
+                                // 将username存入 vuex
+                                root.$store.commit('app/SET_USERNAEM', res.data.email)
+                                // 跳转路由
+                                console.log('登录跳转成功');
+                                root.$router.push({name:'Console'});
+                            }else{
+                                  console.log('登录失败--------前端------' + res.data.msg)
+                            }
+                  })
+              // 注册 请求 api
               }else if (statusLogin.value == 'register') {
-                    getRegister(ruleForm.userName,ruleForm.passWord,ruleForm.code);
+                    getRegister(ruleForm.userName,sha1(ruleForm.passWord),ruleForm.code);
               }else{
                     root.$message.error('失败，请联系管理员');               
               };
@@ -362,7 +385,6 @@ export default {
       rules,
       ruleForm,
       //   方法
-      changes,
       submitForm,
       resetForm,
       switchLG,

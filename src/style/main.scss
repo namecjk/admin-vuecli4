@@ -1,7 +1,22 @@
-.background{
-    background-color: red;
-    height: 100vh;
-    width: 100vh;
-    background: url('@/../assets/img/07.svg') center center no-repeat;
-    // background: #ffffff url(../assets/logo.png) no-repeat;
-}
+@import './config.scss';
+@import './elementui.scss';
+body,html{
+    margin: 0;
+    padding: 0;
+       width: 100%;
+  
+  }
+  #app {
+    font-family: Avenir, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    // text-align: center;
+    font-size: 14px;
+    color: #2c3e50;
+       width: 100%;
+       height: 100vh;
+  }
+  #nav{
+   height: 100%;
+  }
+ 

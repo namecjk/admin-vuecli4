@@ -36,7 +36,7 @@ axiosInstance.interceptors.request.use(function (config) {
     // config.headers['qwe'] = '333333';
     // 添加完 注意要 return config
 
-    if(config.data.email == '' || !validateEmail(config.data.email)) return Message.error('邮箱错误=空');
+    if(config.data.email == '' || !validateEmail(config.data.email)) return Message.error('邮箱错误=空=拦截器');
     return config;
 
   }, function (error) {
