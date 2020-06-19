@@ -8,7 +8,21 @@ import { getLogin } from '../../api/login'
 const state = {
   num: 20,//测试
   showNavList: JSON.parse(sessionStorage.getItem('showNavList')),//取出需要转 对象
-  userName: cookies('userName')
+  userName: cookies('userName'),
+  dateToString(){
+    const myDate =  new Date();
+    const Y = myDate.getFullYear();
+    let M = myDate.getMonth()+1;
+    let D = myDate.getDate();
+    let H = myDate.getHours();
+    let Mts = myDate.getMinutes();
+    M = M <= 9 ? '0'+M : M
+    D = D <= 9 ? '0'+D : D
+    H = H <= 9 ? '0'+H : H
+    Mts = Mts <= 9 ? '0'+Mts : Mts
+    const curDay = Y + '-'+ M + '-' + D + '-' + H + ':' + Mts;
+    return curDay
+}
 }
 // Getter 用 state 作为 函数第一个参数，后面是传入的值, getter类似 computed计算属性
 const getters = {

@@ -225,7 +225,7 @@ export default {
                 data.ruleForm.classParent_Name = '';//清空输入框
               });
           });
-        }else if(data.presentStatus == "addChildren"){
+        }else if(data.presentStatus == "addChildren"){//添加子级
           data.showClassChildren = true;//显示子类输入框
           let classChild_Name = formName.classChild_Name;//拿到自己输入框内容
           if (classChild_Name == '') return data.showMessage("warning", "二级分类有误");
@@ -247,14 +247,42 @@ export default {
           let classParent_Name = formName.classParent_Name;//拿到自己输入框内容
           // 这里修改的data.presentParentItem.classParent_Name是点击编辑事件把当前被点击的数组item保存的通用data中的数据，
           // 通过修改它就能修改data.display，而data.display正式渲染页面的存放的数据，所有这里是动态响应的修改，不用在修改后再赋值给data.display中去
-          data.presentParentItem.classParent_Name = classParent_Name;//赋值修改值
-           addClassify(data.emails, data.tokens, { className: data.displayData }).then(() => {//更新数据库    
-                console.log("addChildren-----resData   有数据   ");
-                data.loading = false; //结束转圈
-                data.parentInput = true; //禁用输入框
-                data.showMessage("success", "添加成功");
-                data.ruleForm.classChild_Name = '';//清空输入框
-              });
+          // data.presentParentItem.classParent_Name = classParent_Name;//赋值修改值
+          //  addClassify(data.emails, data.tokens, { className: data.displayData }).then(() => {//更新数据库    
+          //       console.log("addChildren-----resData   有数据   ");
+          //       data.loading = false; //结束转圈
+          //       data.parentInput = true; //禁用输入框
+          //       data.showMessage("success", "添加成功");
+          //       data.ruleForm.classChild_Name = '';//清空输入框
+
+
+                // 更感infoList中渲染的数组
+                getClassify(data.emails, data.tokens).then(res =>{
+                  let resData = res.resultFind[0].ClassNameAllData;
+                  let result = resData.filter(item => item.classify ==  data.presentParentItem.classParent_Name);
+                  result.forEach(item =>{
+                    item.classify = classParent_Name;
+                  })
+                  // 请求更新api
+                  addClassify(data.emails, data.tokens, { ClassNameAllData: resData }).then(res=>{
+                    console.log('父级修改成功------changeParentName');
+                    console.log(res);
+                  });
+
+                  data.presentParentItem.classParent_Name = classParent_Name;//赋值修改值
+                    addClassify(data.emails, data.tokens, { className: data.displayData }).then(() => {//更新数据库   
+                   
+                      console.log("addChildren-----resData   有数据   ");
+                      data.loading = false; //结束转圈
+                      data.parentInput = true; //禁用输入框
+                      data.showMessage("success", "添加成功");
+                      data.ruleForm.classChild_Name = '';//清空输入框
+                     });
+
+                });
+
+
+              // });
         }else if(data.presentStatus == "changeChildrenName"){
           let classChild_Name = formName.classChild_Name;//拿到自己输入框内容
           data.presentChildrenItem.classChild_Name = classChild_Name;//赋值修改值

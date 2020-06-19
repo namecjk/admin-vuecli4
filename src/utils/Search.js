@@ -36,7 +36,10 @@ export function useSearch(){//搜索接口
                                                 searchedClassify.forEach((item,i) => {
                                                     item.sid = i;
                                                 });
+                                                // console.log('---------search');
+                                                // console.log(searchedClassify);
                                                 let IdResult = searchedClassify.filter(item => item.sid == Num);
+                                                // console.log(IdResult);
                                                 searchedClassify =IdResult;
                                             }else{
                                                 let titleResult = searchedClassify.filter(item => item.title.includes(data.searchInput));

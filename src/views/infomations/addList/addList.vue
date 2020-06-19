@@ -17,7 +17,7 @@
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
-          <el-button type="primary" @click="addNews">确 定</el-button>
+          <el-button type="primary" @click="addNews" :disabled="submintDisabled">确 定</el-button>
           <el-button @click="close">取 消</el-button>
         </div>
       </el-dialog>
@@ -47,25 +47,25 @@ export default {
       data.email = props.parsentEmail;
       data.token = props.parsentToken;
       data.optionsPresent = props.PresentClassify;
-      data.nowTime = data.dateToString();//设置当前日期
+      data.nowTime = root.$store.state.app.dateToString();//设置当前日期
       data.parentDisplayDatasPush = props.parentDisplayData;//父组件传值-全部分类数据中的渲染数据
     });
 
     const data = reactive({
-      dateToString(){
-          const myDate =  new Date();
-          const Y = myDate.getFullYear();
-          let M = myDate.getMonth()+1;
-          let D = myDate.getDate();
-          let H = myDate.getHours();
-          let Mts = myDate.getMinutes();
-          M = M <= 9 ? '0'+M : M
-          D = D <= 9 ? '0'+D : D
-          H = H <= 9 ? '0'+H : H
-          Mts = Mts <= 9 ? '0'+Mts : Mts
-          const curDay = Y + '-'+ M + '-' + D + '-' + H + ':' + Mts;
-          return curDay
-      },
+      // dateToString(){
+      //     const myDate =  new Date();
+      //     const Y = myDate.getFullYear();
+      //     let M = myDate.getMonth()+1;
+      //     let D = myDate.getDate();
+      //     let H = myDate.getHours();
+      //     let Mts = myDate.getMinutes();
+      //     M = M <= 9 ? '0'+M : M
+      //     D = D <= 9 ? '0'+D : D
+      //     H = H <= 9 ? '0'+H : H
+      //     Mts = Mts <= 9 ? '0'+Mts : Mts
+      //     const curDay = Y + '-'+ M + '-' + D + '-' + H + ':' + Mts;
+      //     return curDay
+      // },
       addNews(){//确定提交按钮事件
         let email = data.email;
         let token = data.token;
@@ -76,6 +76,7 @@ export default {
         if (classify == '' || classify == undefined || !classify) return data.showMessage('err','类型错误');//提交填写类型
         if (title == '' || title == undefined || !title) return data.showMessage('err','标题错误');//提交填写标题
         if (content == '' || content == undefined || !content) return data.showMessage('err','内容错误');//提交填写内容
+        data.submintDisabled = true;//提交按钮禁用
         // 包装数据
         let obj = {classify,title,content,time:data.nowTime};//包装新添加的数据对象
         let presentAccount = {email,token};
@@ -91,9 +92,16 @@ export default {
                   data.showMessage("success", "添加成功----------addList组件");
                   data.form.title = '';
                   data.form.content = '';
-                  data.close();//调用父组件函数,关闭弹出窗口
-                  data.parentDisplayDatasPush.splice(0,0,obj);//利用父组件请求来的数组，做假添加，马上显示数组，减少请求API
-                  data.parentDisplayDatasPush.splice(data.parentDisplayDatasPush.length - 1,1);//假删除
+                  // data.close(parentDisplayDatas.length);//调用父组件函数,关闭弹出窗口
+                  emit("dialogClose",parentDisplayDatas.length,obj);
+                  data.submintDisabled = false;
+                  if (parentDisplayDatas.length >= 9 ) {
+                    console.log('123123123123 >= 9 ');
+                    // data.parentDisplayDatasPush.splice(0,0,obj);//利用父组件请求来的数组，做假添加，马上显示数组，减少请求API
+                    console.log(data.parentDisplayDatasPush.length);
+                    data.parentDisplayDatasPush.splice(data.parentDisplayDatasPush.length - 1,1);//假删除
+                  }
+                  
               });
           });
       },
@@ -108,8 +116,9 @@ export default {
     //  更改父组件的行内调用的属性，并传值更改
     //  close: () => emit("update:showDialog", false), //子组件传递给父组件回调函数与数据，参数1 父组件执行的名称  参数2 传递父组件数据,
     //  调用父组件的函数名称
-      close: (sendParentData) => emit("dialogClose",sendParentData), //emit方法子组件传递给父组件回调函数与数据，参数1 父组件执行的名称  参数2 传递父组件数据,
+      close: (sendParentData) => emit("close",sendParentData), //emit方法子组件传递给父组件回调函数与数据，参数1 父组件执行的名称  参数2 传递父组件数据,
       // 属性
+      submintDisabled:false,
       value:'',//选择框双向绑定
       email:'',
       token:'',
