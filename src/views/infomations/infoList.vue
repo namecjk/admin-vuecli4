@@ -87,9 +87,10 @@
         <el-table-column prop="classify" label="类别" sortable></el-table-column>
         <el-table-column prop="time" label="日期" sortable></el-table-column>
         <el-table-column prop="name" label="管理人"  sortable></el-table-column>
-        <el-table-column prop label="新增" type="index" width="150" >
+        <el-table-column prop label="新增" type="index" width="240" >
           <el-button type="danger" size="small" index="delete" @click="deletePresent">删除</el-button>
           <el-button type="success" size="small" @click="EditPresent">编辑</el-button>
+          <el-button type="success" size="small" @click="EditPresent">编辑详情</el-button>
         </el-table-column>
       </el-table>
     </div>
