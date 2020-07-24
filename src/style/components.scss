@@ -1,0 +1,20 @@
+// 组件SearchVue样式
+.searchKeyword-wrapper { //搜索容器
+    .el-input {
+      width: 100%;
+    }
+  .searchKeyword {
+    width: $infolistWidth;
+    margin-right: 5px;
+  }
+  .words {
+    width: 68px;
+  }
+  .searchInput {
+    width: 260px;
+    display: flex;
+  }
+  .searchBtn{
+      margin-left: 10px;
+  }
+}

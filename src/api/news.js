@@ -10,9 +10,8 @@ import axiosInstance from '@/utils/interceptors'
  * */ 
 export function addClassify(email,token,updateData){
     return new Promise((resolve, reject) => {
+        console.log('addClassifyaddClassify');
         console.log(updateData);
-        console.log(email);
-        console.log(token);
         if (!email || !token || !updateData) return console.log('数据有错误');
         axiosInstance.request({
             method:"POST",
@@ -59,7 +58,7 @@ export function getClassify(email,token){
                 // console.log('getClassify---------成功');
                 // console.log(response);
                 if (response.data.length !== 0) {
-                    console.log(response.data);
+                    // console.log(response.data);
                     resolve(response.data)
                 }else{
                     resolve('错误')

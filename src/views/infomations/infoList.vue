@@ -38,7 +38,7 @@
       </el-col>
       <!-- searchKeyword -->
       <el-col :span="7">
-        <div class="searchKeyword-wrapper infoListWrapper">
+        <!-- <div class="searchKeyword-wrapper infoListWrapper">
           <label class="words infoListWords">关键词:</label>
           <div class="searchKeyword">
             <el-select v-model="searchKeywordValue" placeholder="请选择" size="small">
@@ -56,16 +56,17 @@
               placeholder="请输入内容"
               size="small"
             ></el-input>
-            <!-- <el-button type="danger" size="small" @click="searchNow.search">搜索</el-button> -->
           </div>
-        </div>
+        </div> -->
+          <SearchVue :data="ChildrenSearchDatas" @childrenClick="searchNow.search"/>
       </el-col>
       <el-col :span="4">
         <div class="btnAdd">
-          <el-button type="danger" size="small" @click="searchNow.search">搜索</el-button>
-          <el-button type="success" size="small" @click="dialog">新增</el-button>
+          <!-- <el-button type="danger" size="small" @click="searchNow.search">搜索</el-button> -->
+          <el-button type="success" size="small" @click="dialog" v-ShowBtn="'infoList.add'" class="hideBtn">新增</el-button>
         </div>
       </el-col>
+    
     </el-row>
     <!-- 占位高度 -->
     <div class="heightSpace"></div>
@@ -86,20 +87,38 @@
         <el-table-column prop="title" label="标题" width="300"  ></el-table-column>
         <el-table-column prop="classify" label="类别" sortable></el-table-column>
         <el-table-column prop="time" label="日期" sortable></el-table-column>
-        <el-table-column prop="name" label="管理人"  sortable></el-table-column>
-        <el-table-column prop label="新增" type="index" width="240" >
-          <el-button type="danger" size="small" index="delete" @click="deletePresent">删除</el-button>
-          <el-button type="success" size="small" @click="EditPresent">编辑</el-button>
-          <el-button type="success" size="small" @click="EditPresent">编辑详情</el-button>
+        <el-table-column prop="roleTitle" label="管理人"  sortable></el-table-column>
+        <el-table-column prop label="新增" type="index" width="240" > -->
+          <!-- template slot-scope="scope"代表可以传参当前被点击的参数 -->
+          <template slot-scope="scope"> 
+          <el-button   type="danger" size="small" index="delete" @click="deletePresent(scope)" v-ShowBtn="'infoList.delete'" class="hideBtn">删除</el-button>
+          <el-button  type="success" size="small" @click="EditPresent(scope)" v-ShowBtn="'infoList.edit'" class="hideBtn">编辑</el-button>
+          <!-- HTML 设置 跳转方式 -->
+          <!-- <router-link :to="{name:'EditCurrentData',query:{id:scope.$index,title:scope.row.title}}">
+          <el-button type="success" size="small">编辑详情</el-button> 
+          </router-link> -->
+          <!-- 点击事件 设置 跳转方式 -->
+           <el-button  type="success" size="small" @click="EditDetailPages.EditDetail(scope)" v-ShowBtn="'infoList.details'" class="hideBtn">编辑详情</el-button> 
+          </template>
         </el-table-column>
       </el-table>
+
+      <!-- table组件 -->
+    <!-- <TableVue :data="tableVueDatas">
+        <template v-slot:newAdd="tableVueData">
+           <el-button type="danger" size="small" index="delete" @click="deletePresent(tableVueData.data.scope)">删除</el-button>
+           <el-button type="success" size="small" @click="EditPresent(tableVueData.data.scope)">编辑</el-button>
+           <el-button type="success" size="small" @click="EditDetailPages.EditDetail(tableVueData.data.scope)">编辑详情</el-button> 
+        </template>
+    </TableVue> -->
+
     </div>
     <!-- 占位高度 -->
     <div class="heightSpace"></div>
     <!-- footer -->
     <div class="footer">
       <div class="btn">
-        <el-button size="small" @click="deleteAll">批量删除</el-button>
+        <el-button size="small" @click="deleteAll" v-if="showBtn('infoList.selectDelete')">批量删除</el-button>
         <span
           style="fontSize:12px;margin-left:10px;"
         >已选 {{optionsNum.Selected}}/{{optionsNum.total}}</span>
@@ -129,13 +148,12 @@
       :parsentToken="tokens"
       :PresentClassify="optionsPresent"
       :parentDisplayData="displayData"
+      @close="closed"
     />
     <!-- 如果只是需要修改一个值数据，可以使用sync修饰器方法 子组件直接调用emit中传值 父级.sync 自己update:父级属性名,传值改变
     update:showDialog,传值 语句改变  不需要使用回调函数-->
     <!-- <addList :showDialog.sync= dialogFormVisible   />  -->
 
-
-    // 编辑弹出组件
     <EditList
           :ShowEditCurrentData="ShowEditCurrentData"
           :ClassifyData="options"
@@ -150,6 +168,7 @@
 
 
 <script>
+// import TableVue from "@/components/TableVue";
 import {
   reactive,
   toRefs,
@@ -158,14 +177,14 @@ import {
   ref
 } from "@vue/composition-api";
 import { globalVueT } from "@/utils/global_V3.0";
-import { useSearch } from "../../utils/Search.js";
+import { SearchChildUser } from "@/utils/Search.js";
 import addList from "./addList/addList";
 import EditList from "./EditList/EditList";
 import cookies from "cookiesjs";
-
+import SearchVue from '../../components/SearchVue/SearchVue';
 export default {
   components: {
-    addList,EditList
+    addList,EditList,SearchVue
   },
   setup(props, { root }) {
     //通用属性PresentName 请求分页的数据
@@ -178,8 +197,7 @@ export default {
     // 生命周期，组件加载完毕后
     onMounted(() => {
       if (data.emails && data.tokens) {//// 获取所有数组  -- 简单判断账户和token
-        root.$store
-          .dispatch("command/cmdGetPageList", getPageListData.value) //监听请求的所有数据，如果有变化就触发
+        root.$store.dispatch("command/cmdGetPageList", getPageListData.value) //监听请求的所有数据，如果有变化就触发
           .then(res => {
             console.log("cmdGetPageList-----------");
             console.log(res);
@@ -189,22 +207,14 @@ export default {
             data.displayData.forEach((item,i)=>item.currentId = i);
             data.optionsNum.total = data.displayData.length; //显示总共数量
           });
-
-
-
-
-
         // root.$store.dispatch("command/cmdGetClassify",data.Account) 
         //   .then(res => {
         //     console.log('1123123123');
         //     console.log(res);
         //   });
-
-
       } else {
         root.$message({ type: "info", message: "无效账户" });
       }
-
       // 设置通用属性账户和token
       data.currentAccount = { email: data.emails, token: data.tokens };
       // vuex 方式  给子组件传东西
@@ -214,7 +224,6 @@ export default {
           //请求当前账户所有的数组所有的数据
           data.options = res; //传递给子组件的-----addlist子组件-选项分类名字需要  选当前页面选项中也需要
         });
-
       // vue3 自定义方式 可监听
       // root.$store.dispatch('command/cmdGetContentData',dataAccount).then(res=>{
       //   console.log('cmdGetContentData-----------')
@@ -228,6 +237,10 @@ export default {
     // const {comfirmData:aa,comfirmData:bb,comfirmData,comfirmGetClassify} = globalVueT();
     const { comfirmData: aa, comfirmData: bb } = globalVueT();
     watchEffect(() => {
+      // 监听创建一个table组件的组件
+        //  table组件的数据
+        data.tableVueDatas.tabelData = data.displayData//  table组件的数据
+
       console.log("监听成功------------11----------watchEffect");
       data.optionsPresent = data.optionsTypeValue; //监听当前类型
       // data.options = comfirmData.itemArr;//监听并赋值给渲染数据 （类型） 下拉框
@@ -254,18 +267,19 @@ export default {
 
     
    
-    //搜索功能模块,vue3单独抽离
+    // 搜索功能模块,vue3单独抽离
     const searchNow = reactive({
-        search:()=>{
-          const {search} = useSearch();
+        search:(childrenDataObj)=>{
+          const {search} = SearchChildUser();
           let datas = {
             email:data.emails,
             token:data.tokens,
             optionsPresent:data.optionsPresent,//当前选择分类
             optionsDateValue0:data.optionsDateValue[0],//日期起至
             optionsDateValue1:data.optionsDateValue[1],//日期结束
-            searchKeywordValue:data.searchKeywordValue,//搜索值分类
-            searchInput:data.searchInput//搜索框的值
+            // searchKeywordValue:data.searchKeywordValue,//搜索值分类-父组件传递过来的
+            searchKeywordValue:childrenDataObj.optionsClassifyData,//搜索值分类-父组件传递过来的
+            searchInput:childrenDataObj.inputData//搜索框的值-父组件传递过来的
             }
           search(datas,root).then(res=>{
             data.displayData = res;//赋值渲染数组
@@ -275,10 +289,89 @@ export default {
           })
         }
     })
+    
+    // 编辑详情页面-跳转事件
+    const EditDetailPages = reactive({
+            EditDetail:(res)=>{  
+              console.log(res);
+              // js跳转路由方式 - query传参 刷新URL不消失参数
+              // root.$router.push({
+              //   name:'EditCurrentData',
+              //   query:{
+              //     id:res.row.id,
+              //     title:res.row.title
+              //   }
+              // })
 
+               // js跳转路由方式 - params传参 刷新URL参数会消失   但是参数隐藏
+              // root.$router.push({
+              //   name:'EditCurrentData',
+              //   params:{
+              //     id:res.$index,
+              //     title:res.row.title
+              //   }
+              // })
 
+               // js跳转路由方式 - params传参 刷新URL参数会消失 页面刷新参数不会丢失 路由router要设置参数占位 
+              //  root.$router.push({
+              //   path:`/EditCurrentData/${res.$index}/${res.row.title}`
+              // })
 
+              // vuex + html5  实现
+              // 先存数组到vuex - state
+               let params = {
+                  id:{
+                    value:res.$index,
+                    sesstion:true,
+                    sessionName:'infoId'
+                  },
+                  title:{
+                    value:res.row.title,
+                    sesstion:true,
+                    sessionName:'infoTitle'
+                  },
+                  classify:{
+                    value:res.row.classify,
+                    sesstion:true,
+                    sessionName:'infoClass'
+                  },
+                  content:{
+                    value:res.row.content,
+                    sesstion:true,
+                    sessionName:'infoContent'
+                  },
+                  time:{
+                    value:res.row.time,
+                    sesstion:true,
+                    sessionName:'infoTime'
+                  },
+                   img:{
+                    value:res.row.img,
+                    sesstion:true,
+                    sessionName:'infoImg'
+                  }
+                }
+              root.$store.commit('EditDetail/SET_STATE_ALL',params);
+              // root.$store.commit('EditDetail/SET_STATE_ID',{
+              //       value:res.$index,
+              //       sesstion:true,
+              //       sessionName:'infoId'
+              //     })
+              // root.$store.commit('EditDetail/SET_STATE_TITLE',{
+              //       value:res.row.title,
+              //       sesstion:true,
+              //       sessionName:'infoTitle'
+              //     }); 
+              // 再跳转
+              root.$router.push({
+                name:'EditCurrentData',
+              })
+          }
+    });
+   
+   // 数据
     const data = reactive({
+      asd:false,
       // 方法
       // 使用Vue原型注如全局方法调用
       // deletePresent:() => root.globalDelete({root,msg:'确定删除(本条信息)，删除后无法恢复！！！',warn:'警告',fn:data.delete}),
@@ -318,10 +411,13 @@ export default {
           index,
           msg: "确定删除(本条信息)，删除后无法恢复！！！",
           warn: "警告",
-          fn: data.delete
+          fn: data.delete,
+          dd:index
         });
       },
-      EditPresent: () =>{
+      EditPresent: (res) =>{
+        console.log(res);
+        data.currentData = res.row
         data.ShowEditCurrentData = !data.ShowEditCurrentData;
         console.log(data.ShowEditCurrentData);
       },
@@ -336,18 +432,16 @@ export default {
           fn: data.delete
         });
       },
-      delete: () => {//单个删除和批量删除，都会执行本函数，通过变量来判断点击是哪个按钮
-
+      delete: (vueData) => {//单个删除和批量删除，都会执行本函数，通过变量来判断点击是哪个按钮
         // 删除装填判断
         if (data.deleteState == "deletePresent") {
-          
         // 请求所有数组
         root.$store.dispatch('command/cmdGetAllClassData',data.currentAccount).then(res=>{
-                  let resultArr = res.resultFind[0].ClassNameAllData//拿到所有数据
+                  let resultArr = res.resultFind == undefined ? res.childRes[0].ClassNameAllData : res.resultFind[0].ClassNameAllData;//拿到所有数据
                   resultArr.reverse();//颠倒数组，不然id是倒的
                   resultArr.forEach((item, i) => (item.currentId = i)); //被触发一次就循环一次索引，提供给splice删除方法的起始位置
                   // resultArr.splice(data.currentData.currentId, 1); //执行删除
-                  let arr = resultArr.filter(item => item.title ==  data.currentData.title);//拿到删除的id
+                  let arr = resultArr.filter(item => item.title ==  vueData.row.title);//拿到删除的id
                   resultArr.splice(arr[0].currentId, 1);//执行删除 
                   data.displayData.splice(arr[0].currentId, 1)//显示数据假删除
                   data.currentAccount["parentDisplayDatas"] = resultArr; //添加提交给数据库的更新数组 删除完后
@@ -367,24 +461,25 @@ export default {
          } else if (data.deleteState == "deleteAll") {
           //批量删除状态
           console.log("删除成功------deleteAll");
-          data.selectDeleteArr.forEach(selectDeleteArr => {
-            //勾选的数量已被存入通用data中,先循环勾选的数量，勾选几个就循环几此
-            data.displayData.forEach((displayData, i) => {
-              //再循环整体的数组
-              if (displayData.currentId === selectDeleteArr.currentId) {
-                //循环过程中如果id相等，就执行删除
-                data.displayData.splice(i, 1); //执行删除
-              }
-            });
+          root.$store.dispatch("command/cmdGetAllClassData", getPageListData.value).then(res=>{//先请求到所有的数据
+                let allData = res.childRes[0].ClassNameAllData;
+                  data.selectDeleteArr.forEach(selectDeleteArr => {//勾选的数量已被存入通用data.selectDeleteArr中,先循环勾选的数量，勾选几个就循环几次删除
+                   allData.forEach((allDataItem, i) => {//再循环所有的数据
+                      if (allDataItem.title == selectDeleteArr.title) {//循环过程中如果与title相等，就执行删除
+                        allData.splice(i, 1); //执行删除
+                      }
+                    });
+                  });
+                   // 调用更新接口
+                  data.currentAccount["parentDisplayDatas"] = allData; //添加提交给数据库的更新数组 删除完后
+                  root.$store.dispatch("command/cmdSetClassify", data.currentAccount).then(res => {
+                      console.log("delete-----deleteAll------批量删除----成功回调函数");
+                      console.log(res);
+                      root.$store.dispatch("command/cmdGetPageList", getPageListData.value).then(allres=>{
+                          data.displayData = allres.result;
+                      })
+                    });
           });
-          // 调用更新接口
-          data.currentAccount["parentDisplayDatas"] = data.displayData; //添加提交给数据库的更新数组 删除完后
-          root.$store
-            .dispatch("command/cmdSetClassify", data.currentAccount)
-            .then(res => {
-              console.log("delete-----deleteAll------批量删除----成功回调函数");
-              console.log(res);
-            });
         }
       },
       dialog: () => { //新增点击事件
@@ -403,23 +498,15 @@ export default {
               data.dialogFormVisible = false;
         }
       },
-      editBacked:(currentData)=>{
+      editBacked:(currentData)=>{//编辑子组件回调函数
         console.log('-----------------editBacked----------');
         root.$store.dispatch('command/cmdGetAllClassData',data.Account).then(res=>{
-          let all = res.resultFind[0].ClassNameAllData;//拿到所有数据
+          let all = res.resultFind == undefined ? res.childRes[0].ClassNameAllData : res.resultFind[0].ClassNameAllData;;//拿到所有数据
           all.reverse();//颠倒数组，不然子组件传过来的id对不上
           all.forEach((item,i)=>item.currentId = i);//保证每个对象id正常，循环一遍
           let oldData = all.filter(item => item.currentId == currentData.currentId);//过滤出当前被点击的对象，没被修改的；
           // 在拿当前页面渲染的数据要找
-          console.log(oldData);
-          if (oldData.length == 0) {  
-            console.log('!!!oldData------失败---id有问题');
-            console.log(currentData);
-            console.log(all);
-            // arr.forEach(item =>{
-            //   console.log(item.cu);
-            // })
-          }
+          if (oldData.length == 0) return console.log('!!!oldData------失败---id有问题');
           all.forEach(item =>{
              if (oldData.length == 0) return;
                 if (item.title == oldData[0].title){
@@ -428,19 +515,62 @@ export default {
                     item.content = currentData.content;
                     item.currentId = currentData.currentId;
                     item.time = root.$store.state.app.dateToString();
-                    return 
+                    console.log(item);
+
+                    // 判断是否有管理员名称
+                    if(item.roleTitle == undefined || item.roleTitle == ''){
+                      console.log(22);
+                        item.roleTitle = data.emails || '管理员名有误';
+                    }else{
+                      item.roleTitle = data.emails || '管理员名有误';
+                    }
+                    console.log(item);
                 }
           });
           //提交更新api
           let parentDisplayDatas = all;
+          console.log(parentDisplayDatas);
           let dataAccount = {email:data.emails,token:data.tokens,parentDisplayDatas};//配置更新API需要的参数
            root.$store.dispatch('command/cmdSetClassify',dataAccount).then(()=>{
               console.log('编辑调用api----更新成功-----');
+                   data.displayData.forEach((item,i) => {//假修改数据，不用请求api，向界面显示修改后的数据
+                      if(oldData[0].currentId == item.currentId){
+                        data.displayData.splice(i,1,oldData[0])
+                      }
+                     });
               data.ShowEditCurrentData = false;
            });
         })
       },
       // 数据
+      tableVueDatas:{
+         titleOptions: [
+           {
+            prop: "title",
+            label: "标题"
+           },
+           {
+            prop: "classify",
+            label: "类别"
+           },
+           {
+            prop: "time",
+            label: "日期"
+           },
+           {
+            prop: "name",
+            label: "管理人"
+           },
+           {
+            prop: "",
+            label: "新增",
+            displayType: "slot",
+            slotName: "newAdd"
+           }
+         ],
+         tabelData:[]
+      },//给tabale组件的数据
+      routerList: root.$router,//路由地址-拿到路由参数
       emails: cookies("userName"),
       tokens: cookies("token"),
       ShowEditCurrentData:false,
@@ -457,18 +587,21 @@ export default {
       optionsPresent: "", //控制当前类型名字
       optionsDateValue: "", //控制日期的名字
       searchKeywordValue: "ID",
-      searchInput: "",
+      // searchInput: "",
       options: [],
-      optionsSearchKeyword: [
-        {
-          value: "选项1",
-          label: "ID"
-        },
-        {
-          value: "选项2",
-          label: "标题"
-        }
-      ],
+      ChildrenSearchDatas: {
+            options:[
+                  {
+                    value: "选项1",
+                    label: "ID"
+                  },
+                  {
+                    value: "选项2",
+                    label: "标题"
+                  }
+                ],
+          click:'childrenClick'
+          },
       tableData: [
         {
           date: "2016-05-02 19:20:31",
@@ -489,8 +622,7 @@ export default {
       ],
       Account: { email: cookies("userName"), token: cookies("token") },
       optionsNum: { Selected: 0, total: 10 }, //批量选择显示数量双向绑定
-       //日期快捷键数据
-      pickerOptions: {
+      pickerOptions: { //日期快捷键数据
           shortcuts: [{
             text: '最近一周',
             onClick(picker) {
@@ -519,7 +651,7 @@ export default {
         },
     });
 
-    return { ...toRefs(data), getPageListData,searchNow};
+    return { ...toRefs(data), getPageListData,searchNow,EditDetailPages};
   }
 };
 </script>
@@ -560,23 +692,6 @@ export default {
       width: 40px;
     }
   }
-  .searchKeyword-wrapper { //搜索容器
-    
-      .el-input {
-        width: 100%;
-      }
-    .searchKeyword {
-      width: $infolistWidth;
-      margin-right: 5px;
-    }
-    .words {
-      width: 68px;
-    }
-    .searchInput {
-      width: 260px;
-      display: flex;
-    }
-  }
   .btnAdd {//搜索和新增按钮 容器
     // .el-button{
     //   width: 100px;
@@ -598,3 +713,7 @@ export default {
   }
 }
 </style>
+<style> 
+button.hideBtn{display: none;}
+button.showBtn{display: inline-block;}
+</style> 

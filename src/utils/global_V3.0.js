@@ -14,16 +14,13 @@ export function globalVueT(){
             itemArr:[],
             aa:'asdasdasd111222aaasss',
             globalDelete:(root,data) => {
+              console.log(data);
                 MessageBox.confirm( data.msg, data.warn|| '提示', { // data.msg, data.warn 是提示信息
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     type: 'warning'
                   }).then(() => {
-                      // 改变值
-                      // comfirmData.aa = '阿萨德阿萨德';
-                      // 判断 
-                      // console.log(data)
-                      data && data.fn();
+                      data && data.fn(data.dd);
                       root.$message({
                       type: 'success',
                       message: '删除成功!'

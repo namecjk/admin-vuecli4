@@ -59,6 +59,7 @@ const actions = { // 可以异步调用  也可以同步 调用 mutations中的�
   },
   // 异步调用 使用 pormiss  , 把登录 方法 放进来  
   login(context, data) {
+    console.log(data);
     return new Promise((resolve) => {
       getLogin(data.userName, data.passWord, data.code, function (res) {
         console.log('回调函数成-------------------------vuex------actions');

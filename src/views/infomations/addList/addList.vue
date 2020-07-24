@@ -32,10 +32,10 @@ export default {
   name: "addList",
   props: { //获取父组件专递的数据 都在props里面
     showDialog: Boolean,//是否显示弹窗
-    ClassifyData:Array,//父组件传值全部分类数据--选项分类名字需要
-    parentDisplayData:Array,//父组件传值全部分类数据中的渲染数据
-    parsentEmail:String,//当前父组件的账户
-    parsentToken:String,//当前父组件的token
+    ClassifyData:Array,//父组件传值全部分类数据--选项分类名字需要     
+    parentDisplayData:Array,//父组件传值全部分类数据中的渲染数据    
+    parsentEmail:String,//当前父组件的账户   
+    parsentToken:String,//当前父组件的token 
     PresentClassify:String//当前的分类
   },
   setup(props, { emit,root }) {
@@ -73,17 +73,18 @@ export default {
         let title = data.form.title;//拿到标题
         let content = data.form.content;//拿到内容
         // 判断
-        if (classify == '' || classify == undefined || !classify) return data.showMessage('err','类型错误');//提交填写类型
+        if (classify == '' || classify == undefined || !classify) return data.showMessage('err','类型错误1');//提交填写类型
         if (title == '' || title == undefined || !title) return data.showMessage('err','标题错误');//提交填写标题
         if (content == '' || content == undefined || !content) return data.showMessage('err','内容错误');//提交填写内容
         data.submintDisabled = true;//提交按钮禁用
         // 包装数据
-        let obj = {classify,title,content,time:data.nowTime};//包装新添加的数据对象
+        let obj = {classify,title,content,time:data.nowTime,roleTitle:email};//包装新添加的数据对象
         let presentAccount = {email,token};
            root.$store
           .dispatch("command/cmdGetAllClassData", presentAccount) //监听请求的所有数据，如果有变化就触发
           .then(res => {
-            let parentDisplayDatas = res.resultFind[0].ClassNameAllData;//先拿到数据库中所有的数组;
+            // res.resultFind = 主账号的 如果 = undefined 拿就等于子账户的 否则就等于主账户
+            let parentDisplayDatas = res.resultFind == undefined ? res.childRes[0].ClassNameAllData : res.resultFind[0].ClassNameAllData;//先拿到数据库中所有的数组;
              parentDisplayDatas.push(obj);//Push新的数据对象
             //调用更新API
               let dataAccount = {email,token,parentDisplayDatas};//配置更新API需要的参数

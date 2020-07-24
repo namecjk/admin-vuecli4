@@ -6,7 +6,10 @@ import { Message } from 'element-ui';
 // 引入验证格式
 import { validateEmail } from "@/utils/validate";
 
-const BASEURL = process.env.NODE_ENV === 'production' ? '' : '/api';
+// const BASEURL = process.env.NODE_ENV === 'production' ? '' : '/api'; // 路径写在这里不是很安全，使用环境变量来处理
+const BASEURL = process.env.NODE_ENV === 'production' ? process.env.VUE_APP_API : process.env.VUE_APP_API;
+console.log( process.env.VUE_APP_API);
+console.log(BASEURL);
 
 
 // axios实例   baseURL === 基础值 必须存在最前面的url值
@@ -48,12 +51,13 @@ axiosInstance.interceptors.request.use(function (config) {
 axiosInstance.interceptors.response.use(function (response) {
     // Do something with response data
     console.log('响应拦截器----成功回调函数')
-    // console.log(response)
+    console.log(response)
     // 后端判断邮箱账户不能为空
     if(response.data == '邮箱错误')return Message.error(response.data);
     return response;
   }, function (error) {
     // Do something with response error
+    console.log(111);
     return Promise.reject(error);
   });
 

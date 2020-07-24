@@ -1,24 +1,34 @@
-# admin-vuecli4
+功能：
+1、登录注册；
+2、邮箱验证码功能；
+3、表单验证功能；
+4、增删改查内容功能；
+5、超级管理员，增删改查主次账户功能；
+6、禁用启用账户功能；
+7、搜索分类、日期、关键词、id功能；
 
-## Project setup
-```
-npm install
-```
+后台API：
+ssh -l root -p 22 106.52.151.159 
+root/expressApis/Api/post.js  api文件
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+解决bug： 
+（1）小编辑窗口改动，会改动内容上的属性（解决）。  
+（2）子账户修改密码后登陆错误（解决） 。
+（3）子账户登录后路由是上一个子账户的没有得到刷新（解决）。
+（4）将添加编辑后管理员显示在table中（解决）。
+（5）子账户操作搜索API-bug（解决）。
+（6）子账户switch功能，完善登录限制（解决）。
+（7）子账户添加信息分类错误（解决）。
+（8）子账户添加信息分类后-info列表没有同步加载上（取消keep alive）（解决）。
+（9）详情编辑框中第一次点开后有缓存（解决）。
+（10）详情编辑提交bug完成（解决）。
+（11）编辑详情，ele-input 标题不能输入（原因是不能绑定form表单，绑定的值必须先是空值，在想办法赋值）（解决）。
+（12）批量删除bug（解决）。
+（12）子账户搜索id（未解决）。
 
-### Compiles and minifies for production
-```
-npm run build
-```
 
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+上传：
+上传打包  npm run build    
+配置nginx
+上传打包到服务器  scp -r ./dist/* root@106.52.151.159:/root/userAdmin
+单个上传nginx scp ./nginx.conf/root@106.52.151.159:/etc/nginx 

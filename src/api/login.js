@@ -9,6 +9,7 @@ import axiosInstance from '@/utils/interceptors'
  * 获取验证码
  * */ 
 export function getPassCode(email,passWord,loginOrregister){
+   return new Promise((resolve,reject)=>{
     if (!email && !passWord && !loginOrregister) return console.log('账户密码错误');
     // 请求后台获取验证码之前，查询一下该email是否存在 如果存在 说明是注册过的，应该阻止请求
     loginOrregister = loginOrregister == 'login' ? 'logincode' : 'reqcode';
@@ -22,12 +23,13 @@ export function getPassCode(email,passWord,loginOrregister){
     })
     .then(function (response) {
             console.log('前台成功回调函数')
-            console.log(response);
+            resolve(response);
     })
     .catch(function (error) {
             console.log('这里的错误是前端发送请求的catch回调函数保存')
-            console.log(error);
+            reject(error);
     });
+   })
 }
  
  /**

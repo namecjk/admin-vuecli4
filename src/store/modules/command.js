@@ -11,7 +11,9 @@ const actions = {
         return new Promise((resolve) => {
             getClassify(data.email,data.token).then(res=> {
                 console.log('成功----------cmdGetClassify');
-                let resData = res.resultFind[0].className;
+                console.log(res);
+                // console.log(res.childRes == undefined);
+                let resData = res.childRes == undefined ? res.resultFind[0].className : res.childRes[0].className;
                 state.data = resData;
                 resolve(resData);
               });

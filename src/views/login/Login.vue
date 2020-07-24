@@ -200,7 +200,7 @@ export default {
 
     // 表单验证数据
     const ruleForm = reactive({
-      userName: "312316773@qq.com",
+      userName: "",
       passWord: "QWEqwe123",
       code: "",
       checkPass: ""
@@ -220,9 +220,6 @@ export default {
     // 生命周期
     onMounted(() => {
       // 环境变量值    在什么环境下 执行什么函数
-      console.log(process.env.NODE_ENV)
-      console.log(process.env.VUE_APP_ABC)
-      console.log(process.env.VUE_APP_MODE)
       console.log('以上是vue3---环境变量---------测试-----------------')
 
       // 测试
@@ -241,11 +238,16 @@ export default {
         reqCode.value = '发送中';
         disabled.value = true;
 
-        // 倒计时方法
-        timeBack(num);
+        // // 倒计时方法
+        // timeBack(num);
 
         // 判断登录还是注册，并执行请求api
-        getPassCode(ruleForm.userName,ruleForm.passWord,statusLogin.value);
+        getPassCode(ruleForm.userName,ruleForm.passWord,statusLogin.value).then(res=>{
+          let code = res.data.code;//验证码
+         // 倒计时方法
+        timeBack(num,code,res.data);
+
+        })
 
         // // 请求api
         // getSms(ruleForm.userName);
@@ -253,13 +255,13 @@ export default {
         
     };
     // 到计时方法
-    const timeBack = (num) => {
+    const timeBack = (num,code,info) => {
 
       setTimeout(() => {
             // 提示
             root.$message({
-            message: '验证码已发送,请注意查收',
-            type: 'success'
+            message: info.code ? `${info.msg}-----${info.code}` : info.msg,
+            type: info.code ? 'success' : 'warning'
             });
 
             // 请求验证码
@@ -333,17 +335,22 @@ export default {
                     root.$store.dispatch('app/login',data)
                       .then((res)=>{  
                           console.log('登录成功--------前端')
-                          console.log(res)
+                          // console.log(res.data.msg)
                             if (res.data.length !== 0) {
+                                // 判断子账户的状态，是否可以登录
+                                if(res.data.childAcc)if(res.data.childAcc.currentStatus == '0') return root.$notify.error({title: '登录失败',message:"账户被禁用，请联系管理员"});
                                 // 存入cookies
                                 let myToken = res.data.token;
                                 cookies({userName:res.data.email,token:myToken});
-                                console.log(typeof myToken);
+                                // console.log(typeof myToken);
                                 // 将username存入 vuex
                                 root.$store.commit('app/SET_USERNAEM', res.data.email)
+                                //成功消息通
+                                root.$notify({title: '登录成功',message:"即将进入",type: 'success'});
                                 // 跳转路由
-                                console.log('登录跳转成功');
-                                root.$router.push({name:'Console'});
+                                setTimeout(() => {
+                                  root.$router.push({name:'Console'}).catch(err => {console.log(err);});//路由跳转
+                                }, 1000);
                             }else{
                                   console.log('登录失败--------前端------' + res.data.msg)
                             }

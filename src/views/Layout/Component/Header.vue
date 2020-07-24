@@ -38,8 +38,7 @@ export default {
       // changeLists: () => root.$store.dispatch('changeNav', {'asd':123123123}), // 通过调用vuex中的mutations中的同步方法拿到state中的值
       getUserName: computed(() => root.$store.state.app.userName),
       getOut: () => {
-        root
-          .$confirm("此操作将退出登录, 是否继续?", "提示", {
+        root.$confirm("此操作将退出登录, 是否继续?", "提示", {
             confirmButtonText: "确定",
             cancelButtonText: "取消",
             type: "warning"
@@ -51,7 +50,9 @@ export default {
             });
             // 退出
             root.$store.dispatch("app/exit").then(() => {
-              root.$router.push('/login')
+              root.$router.push('/login')//router.push // 就是路由跳转
+              root.$store.commit('dynamicRoutes/deleteStateRouterRole');//清除角色信息 
+              root.$store.commit('dynamicRoutes/deleteStateAllRouters');//清除所有路由中的动态路由，让其默认=默认存在的路由;
               console.log('退出成功');
             });
           })

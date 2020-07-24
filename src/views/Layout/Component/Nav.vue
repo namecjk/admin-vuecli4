@@ -9,7 +9,7 @@
       <el-row class="tac">
         <el-col :span="12">
           <el-menu
-            default-active="2"
+            :default-active="menuActive"
             class="el-menu-vertical-demo"
             :collapse="showList"
             background-color="transparent"
@@ -17,7 +17,7 @@
             active-text-color="#ffd04b"
             router
           >
-            <!-- 有些元素需要隐藏，但是v-for和v-show 不推荐卸载一起 ，所有使用templae标签，该标签不在DOM中渲染 -->
+            <!-- 有些元素需要隐藏，但是v-for和v-show 不推荐放在一起 ，所有使用templae标签，该标签不在DOM中渲染 -->
 
             <template v-for="(item,i) in routerList">
               <el-submenu :index="item.path" :key="i" v-show="!item.hide">
@@ -27,9 +27,13 @@
                 <svg-icon :svgName="item.icon == '' ? 'info' : item.icon"  />
                   <span>{{item.meta.name}}</span>
                 </template>
-                <el-menu-item-group v-for="(items,i) in item.children" :key="i">
-                  <el-menu-item :index="items.path">{{items.meta.name}}</el-menu-item>
-                </el-menu-item-group>
+                <!-- 子级 -->
+                <!-- root.$router.options.routes 拿参数 -->
+                    <template v-for="(items,i) in item.children">
+                      <el-menu-item-group v-if="!items.hide" :key="i">
+                        <el-menu-item :index="items.path">{{items.meta.name}}</el-menu-item>
+                      </el-menu-item-group>
+                    </template>
               </el-submenu>
             </template>
 
@@ -43,19 +47,29 @@
 
 
 <script>
-import { reactive,toRefs,computed } from "@vue/composition-api";
+import { reactive,toRefs,computed, watchEffect } from "@vue/composition-api";
 export default {
   name: "Nav",
   setup(props, { root }) {
      console.log(root.$store.state.app.num)//拿到state中的 通用值
      console.log(root.$store.getters + '----------测试vuex getters');
+    //  监听路由的变化，
+    watchEffect(()=>{
+      console.log('监听路由---------------');
+      data.routerList =  root.$store.getters['dynamicRoutes/getAllRouters'];
+      console.log(root.$store.getters['dynamicRoutes/getAllRouters']);
+      console.log(data.routerList);
+    })
 
 
 
     let data = reactive({
-        routerList: root.$router.options.routes,//路由地址
+        routerList: [],//路由地址-拿到路由参数
         showList : computed(() => root.$store.state.app.showNavList),// 要拿到store中被改变的值，就必须监听这个数据，否是拿到的原始的值
-    })
+        menuActive: computed(()=>{//拿到当前路由字符串，在el-menu标签属性 :default-active="menuActive" 加入，实现刷新被选中不消失
+                 return root.$router.currentRoute.fullPath;
+        })
+    });
 
     let methods = reactive({
         // routerListss:() => root.$router.options.routes,//路由地址

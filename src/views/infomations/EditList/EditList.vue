@@ -2,7 +2,7 @@
   <div class="wrapper">
     <!-- 新增表单 -->
     <div class="asd">
-      <el-dialog title="编辑" :visible.sync="dialogFormVisible"  @close="closed('edit')">
+      <el-dialog title="编辑" :visible.sync="dialogFormVisible"  @close="closed('edit')" @open="open">
         <el-form :model="form" style="padding:0px 50px 0px 50px;box-sizing:border-box">
           <el-form-item label="类别:">
             <el-select v-model="form.classify" placeholder="请选择">
@@ -42,14 +42,15 @@ export default {
   setup(props,{emit}) {
     // 监听变化
     watchEffect(() => {
-      console.log('监听成功-------------EditList')
-      console.log(props);
+      console.log('监听成功-------------EditList');
       data.dialogFormVisible = props.ShowEditCurrentData;//监听-显示隐藏该组件
       data.classifySelect = props.ClassifyData//监听-所有选项分类数组
-      data.form = props.CurrentData//监听-父组件传递过来的当前被点击的元素-且赋值给form对象,form对象是双向绑定
     });
     
     const methods =  reactive({//方法
+        open:()=>{
+          data.form = Object.assign({},props.CurrentData);//监听-父组件传递过来的当前被点击的元素-且赋值给form对象,form对象是双向绑定
+        },
         editCurrent:()=>{
             // let dataAccount = {email:props.parsentEmail,token:props.parsentToken}
             // // 先拿到所有的数组

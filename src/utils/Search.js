@@ -1,9 +1,9 @@
 //搜索功能单独抽离出来
 import { getAllClassData } from "@/api/news.js";
-
-
-export function useSearch(){//搜索接口
-                function search(data,root){
+//搜索接口
+export function SearchChildUser(){
+         function search(data,root){
+                    console.log(data);
                     return new Promise ((resolve)=>{
                         if (
                             data.optionsPresent !== '' || 
@@ -14,10 +14,7 @@ export function useSearch(){//搜索接口
                                 // 请求所有数据接口
                                 getAllClassData(data.email,data.token).then(res=> {
                                     // 请求到的所有数据
-                                    let resultArr = res.resultFind[0].ClassNameAllData;
-
-
-
+                                    let resultArr = res.resultFind == undefined ? res.childRes[0].ClassNameAllData : res.resultFind[0].ClassNameAllData;
                                     //做类型搜索
                                     if ( data.optionsPresent !== '') {
                                         // 过滤出类型的分类
@@ -75,9 +72,6 @@ export function useSearch(){//搜索接口
                                         // 返回前端数据
                                         resolve(dateResult);
                                     
-
-
-
                                     // 做标题和id搜索
                                     }else if(data.searchInput !== ''){
                                             // 判断搜索是id 还是标题

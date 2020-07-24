@@ -1,7 +1,7 @@
 <template>
   <div class="wrapper">
     <div class="addClassifyBtn">
-      <el-button type="danger" size="small" @click="changeClassChildren">添加一级分类</el-button>
+      <el-button type="danger" size="small" @click="changeClassChildren" v-if="showBtn('infoClass.add')">添加一级分类</el-button>
     </div>
     <div class="lineSpace"></div>
     <div class="classify-wrapper">
@@ -92,7 +92,8 @@ export default {
     // 生命周期
     onMounted(() => {
       getClassify(data.emails,data.tokens).then(res => {
-        let resData = res.resultFind[0].className;
+        // let resData = res.resultFind[0].className;
+        let resData = res.childRes == undefined ? res.resultFind[0].className : res.childRes[0].className;
         data.displayData = resData;
         console.log(data.displayData);
         console.log(typeof resData);
@@ -203,7 +204,7 @@ export default {
           getClassify(data.emails, data.tokens).then(res => {
             //先查找是为了先拿到数据库中的数据，在前端push后，在更新数据库
             data.loading = true;
-            let resData = res.resultFind[0].className;
+            let resData = res.resultFind == undefined ?  res.childRes[0].className : res.resultFind[0].className;
             //   判断二级分类名字是否存在
             if (objData.children[0].classChild_Name == "") {
               //不存在
